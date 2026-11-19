@@ -1,0 +1,270 @@
+{
+  "entities": {
+    "PortfolioProfile": {
+      "title": "PortfolioProfile",
+      "description": "Public profile metadata and resume header details for the BBA Management student.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "degree": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "university": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "graduationYear": { "type": "string", "minLength": 4, "maxLength": 20 },
+        "gpa": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "location": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "headline": { "type": "string", "minLength": 5, "maxLength": 180 },
+        "bio": { "type": "string", "minLength": 10, "maxLength": 1500 },
+        "githubUrl": { "type": "string", "minLength": 0, "maxLength": 300 },
+        "linkedinUrl": { "type": "string", "minLength": 0, "maxLength": 300 },
+        "contactEmail": { "type": "string", "minLength": 3, "maxLength": 150 },
+        "availability": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "portraitUrl": { "type": "string", "minLength": 0, "maxLength": 500 },
+        "resumeTagline": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "fullName",
+        "degree",
+        "university",
+        "graduationYear",
+        "gpa",
+        "location",
+        "headline",
+        "bio",
+        "githubUrl",
+        "linkedinUrl",
+        "contactEmail",
+        "availability",
+        "portraitUrl",
+        "resumeTagline",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Management, strategy, analytics, or technical project featured in the portfolio.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "category": {
+          "type": "string",
+          "enum": ["Strategy", "Analytics", "Operations", "Finance"]
+        },
+        "summary": { "type": "string", "minLength": 10, "maxLength": 1200 },
+        "impactMetric": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "role": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "period": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "tools": { "type": "array", "description": "Up to 10 tools or methodologies used." },
+        "imageUrl": { "type": "string", "minLength": 0, "maxLength": 500 },
+        "repoUrl": { "type": "string", "minLength": 0, "maxLength": 300 },
+        "caseStudyUrl": { "type": "string", "minLength": 0, "maxLength": 300 },
+        "featured": { "type": "boolean" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "category",
+        "summary",
+        "impactMetric",
+        "role",
+        "period",
+        "tools",
+        "imageUrl",
+        "repoUrl",
+        "caseStudyUrl",
+        "featured",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Experience": {
+      "title": "Experience",
+      "description": "Internship, leadership, consulting, or research role.",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "organization": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "location": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "period": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "type": {
+          "type": "string",
+          "enum": ["Internship", "Leadership", "Consulting", "Research"]
+        },
+        "highlights": { "type": "array", "description": "Up to 8 quantified bullet highlights." },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "role",
+        "organization",
+        "location",
+        "period",
+        "type",
+        "highlights",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Academic honor, case competition podium, scholarship, or publication.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "institution": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "date": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "category": {
+          "type": "string",
+          "enum": ["Academic Honor", "Case Competition", "Scholarship", "Publication"]
+        },
+        "description": { "type": "string", "minLength": 5, "maxLength": 800 },
+        "metric": { "type": "string", "minLength": 0, "maxLength": 80 },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "institution",
+        "date",
+        "category",
+        "description",
+        "metric",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Skill": {
+      "title": "Skill",
+      "description": "Management or technical skill with proficiency and applied context.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "domain": {
+          "type": "string",
+          "enum": ["Management", "Technical"]
+        },
+        "proficiency": {
+          "type": "string",
+          "enum": ["Advanced", "Proficient", "Intermediate"]
+        },
+        "context": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "name",
+        "domain",
+        "proficiency",
+        "context",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Certification": {
+      "title": "Certification",
+      "description": "Verified professional or technical certification.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "issuer": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "issueDate": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "credentialId": { "type": "string", "minLength": 0, "maxLength": 80 },
+        "credentialUrl": { "type": "string", "minLength": 0, "maxLength": 300 },
+        "category": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "name",
+        "issuer",
+        "issueDate",
+        "credentialId",
+        "credentialUrl",
+        "category",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Private recruiter or visitor contact message submitted via the portfolio form.",
+      "type": "object",
+      "properties": {
+        "senderName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "senderEmail": { "type": "string", "minLength": 5, "maxLength": 150 },
+        "organization": { "type": "string", "minLength": 0, "maxLength": 120 },
+        "subject": { "type": "string", "minLength": 2, "maxLength": 150 },
+        "message": { "type": "string", "minLength": 10, "maxLength": 2000 },
+        "status": {
+          "type": "string",
+          "enum": ["new", "reviewed", "archived"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "senderName",
+        "senderEmail",
+        "organization",
+        "subject",
+        "message",
+        "status",
+        "createdAt"
+      ]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized portfolio administrator record.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "minLength": 5, "maxLength": 150 },
+        "role": { "type": "string", "enum": ["admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/portfolio/{profileId}": {
+      "schema": { "$ref": "#/entities/PortfolioProfile" },
+      "description": "Singleton profile document ('main') holding public BBA portfolio bio and resume header."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Publicly readable portfolio projects; writable only by verified portfolio owner."
+    },
+    "/experiences/{experienceId}": {
+      "schema": { "$ref": "#/entities/Experience" },
+      "description": "Publicly readable professional experiences; writable only by verified portfolio owner."
+    },
+    "/achievements/{achievementId}": {
+      "schema": { "$ref": "#/entities/Achievement" },
+      "description": "Publicly readable academic honors and case competition achievements; writable only by verified portfolio owner."
+    },
+    "/skills/{skillId}": {
+      "schema": { "$ref": "#/entities/Skill" },
+      "description": "Publicly readable management and technical skills; writable only by verified portfolio owner."
+    },
+    "/certifications/{certId}": {
+      "schema": { "$ref": "#/entities/Certification" },
+      "description": "Publicly readable professional certifications; writable only by verified portfolio owner."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/Inquiry" },
+      "description": "Recruiter contact form submissions. Anyone may create a 'new' inquiry; only verified portfolio owner may read, list, update status, or delete."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Admin role mapping; read restricted to self or bootstrapped owner."
+    }
+  }
+}

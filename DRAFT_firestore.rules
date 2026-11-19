@@ -1,0 +1,291 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Hardened Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerified() && (
+        request.auth.token.email == 'ankurmishrastudent@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isBoundedString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidEmail(email) {
+      return isBoundedString(email, 5, 150) && email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    }
+
+    // Entity Validators
+    function isValidPortfolioProfile(data) {
+      return data.keys().hasAll([
+        'fullName', 'degree', 'university', 'graduationYear', 'gpa', 'location',
+        'headline', 'bio', 'githubUrl', 'linkedinUrl', 'contactEmail',
+        'availability', 'portraitUrl', 'resumeTagline', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'fullName', 'degree', 'university', 'graduationYear', 'gpa', 'location',
+        'headline', 'bio', 'githubUrl', 'linkedinUrl', 'contactEmail',
+        'availability', 'portraitUrl', 'resumeTagline', 'updatedAt'
+      ]) &&
+      isBoundedString(data.fullName, 2, 100) &&
+      isBoundedString(data.degree, 2, 120) &&
+      isBoundedString(data.university, 2, 140) &&
+      isBoundedString(data.graduationYear, 4, 20) &&
+      isBoundedString(data.gpa, 1, 30) &&
+      isBoundedString(data.location, 2, 100) &&
+      isBoundedString(data.headline, 5, 180) &&
+      isBoundedString(data.bio, 10, 1500) &&
+      isBoundedString(data.githubUrl, 0, 300) &&
+      isBoundedString(data.linkedinUrl, 0, 300) &&
+      isValidEmail(data.contactEmail) &&
+      isBoundedString(data.availability, 2, 120) &&
+      isBoundedString(data.portraitUrl, 0, 500) &&
+      isBoundedString(data.resumeTagline, 2, 200) &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll([
+        'title', 'category', 'summary', 'impactMetric', 'role', 'period',
+        'tools', 'imageUrl', 'repoUrl', 'caseStudyUrl', 'featured', 'order',
+        'createdAt', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'title', 'category', 'summary', 'impactMetric', 'role', 'period',
+        'tools', 'imageUrl', 'repoUrl', 'caseStudyUrl', 'featured', 'order',
+        'createdAt', 'updatedAt'
+      ]) &&
+      isBoundedString(data.title, 2, 120) &&
+      data.category in ['Strategy', 'Analytics', 'Operations', 'Finance'] &&
+      isBoundedString(data.summary, 10, 1200) &&
+      isBoundedString(data.impactMetric, 2, 120) &&
+      isBoundedString(data.role, 2, 100) &&
+      isBoundedString(data.period, 2, 60) &&
+      data.tools is list && data.tools.size() <= 10 &&
+      (data.tools.size() == 0 || (data.tools[0] is string && data.tools[0].size() <= 60)) &&
+      isBoundedString(data.imageUrl, 0, 500) &&
+      isBoundedString(data.repoUrl, 0, 300) &&
+      isBoundedString(data.caseStudyUrl, 0, 300) &&
+      data.featured is bool &&
+      data.order is number &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidExperience(data) {
+      return data.keys().hasAll([
+        'role', 'organization', 'location', 'period', 'type', 'highlights',
+        'order', 'createdAt', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'role', 'organization', 'location', 'period', 'type', 'highlights',
+        'order', 'createdAt', 'updatedAt'
+      ]) &&
+      isBoundedString(data.role, 2, 120) &&
+      isBoundedString(data.organization, 2, 140) &&
+      isBoundedString(data.location, 2, 100) &&
+      isBoundedString(data.period, 2, 60) &&
+      data.type in ['Internship', 'Leadership', 'Consulting', 'Research'] &&
+      data.highlights is list && data.highlights.size() <= 8 &&
+      (data.highlights.size() == 0 || (data.highlights[0] is string && data.highlights[0].size() <= 350)) &&
+      data.order is number &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidAchievement(data) {
+      return data.keys().hasAll([
+        'title', 'institution', 'date', 'category', 'description', 'metric',
+        'order', 'createdAt', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'title', 'institution', 'date', 'category', 'description', 'metric',
+        'order', 'createdAt', 'updatedAt'
+      ]) &&
+      isBoundedString(data.title, 2, 140) &&
+      isBoundedString(data.institution, 2, 140) &&
+      isBoundedString(data.date, 2, 40) &&
+      data.category in ['Academic Honor', 'Case Competition', 'Scholarship', 'Publication'] &&
+      isBoundedString(data.description, 5, 800) &&
+      isBoundedString(data.metric, 0, 80) &&
+      data.order is number &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidSkill(data) {
+      return data.keys().hasAll([
+        'name', 'domain', 'proficiency', 'context', 'order', 'createdAt', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'name', 'domain', 'proficiency', 'context', 'order', 'createdAt', 'updatedAt'
+      ]) &&
+      isBoundedString(data.name, 1, 80) &&
+      data.domain in ['Management', 'Technical'] &&
+      data.proficiency in ['Advanced', 'Proficient', 'Intermediate'] &&
+      isBoundedString(data.context, 2, 200) &&
+      data.order is number &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidCertification(data) {
+      return data.keys().hasAll([
+        'name', 'issuer', 'issueDate', 'credentialId', 'credentialUrl', 'category',
+        'order', 'createdAt', 'updatedAt'
+      ]) && data.keys().hasOnly([
+        'name', 'issuer', 'issueDate', 'credentialId', 'credentialUrl', 'category',
+        'order', 'createdAt', 'updatedAt'
+      ]) &&
+      isBoundedString(data.name, 2, 140) &&
+      isBoundedString(data.issuer, 2, 120) &&
+      isBoundedString(data.issueDate, 2, 40) &&
+      isBoundedString(data.credentialId, 0, 80) &&
+      isBoundedString(data.credentialUrl, 0, 300) &&
+      isBoundedString(data.category, 2, 60) &&
+      data.order is number &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidInquiry(data) {
+      return data.keys().hasAll([
+        'senderName', 'senderEmail', 'organization', 'subject', 'message', 'status', 'createdAt'
+      ]) && data.keys().hasOnly([
+        'senderName', 'senderEmail', 'organization', 'subject', 'message', 'status', 'createdAt'
+      ]) &&
+      isBoundedString(data.senderName, 2, 100) &&
+      isValidEmail(data.senderEmail) &&
+      isBoundedString(data.organization, 0, 120) &&
+      isBoundedString(data.subject, 2, 150) &&
+      isBoundedString(data.message, 10, 2000) &&
+      data.status in ['new', 'reviewed', 'archived'] &&
+      data.createdAt is timestamp;
+    }
+
+    // Collection Rules
+    match /portfolio/{profileId} {
+      allow get: if isValidId(profileId) && profileId == 'main';
+      allow create: if isValidId(profileId) && profileId == 'main' && isAdmin() &&
+        isValidPortfolioProfile(incoming()) && incoming().updatedAt == request.time;
+      allow update: if isValidId(profileId) && profileId == 'main' && isAdmin() &&
+        isValidPortfolioProfile(incoming()) && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'fullName', 'degree', 'university', 'graduationYear', 'gpa', 'location',
+          'headline', 'bio', 'githubUrl', 'linkedinUrl', 'contactEmail',
+          'availability', 'portraitUrl', 'resumeTagline', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId);
+      allow list: if true;
+      allow create: if isValidId(projectId) && isAdmin() && isValidProject(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(projectId) && isAdmin() && isValidProject(incoming()) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'category', 'summary', 'impactMetric', 'role', 'period',
+          'tools', 'imageUrl', 'repoUrl', 'caseStudyUrl', 'featured', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(projectId) && isAdmin();
+    }
+
+    match /experiences/{experienceId} {
+      allow get: if isValidId(experienceId);
+      allow list: if true;
+      allow create: if isValidId(experienceId) && isAdmin() && isValidExperience(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(experienceId) && isAdmin() && isValidExperience(incoming()) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'role', 'organization', 'location', 'period', 'type', 'highlights', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(experienceId) && isAdmin();
+    }
+
+    match /achievements/{achievementId} {
+      allow get: if isValidId(achievementId);
+      allow list: if true;
+      allow create: if isValidId(achievementId) && isAdmin() && isValidAchievement(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(achievementId) && isAdmin() && isValidAchievement(incoming()) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'institution', 'date', 'category', 'description', 'metric', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(achievementId) && isAdmin();
+    }
+
+    match /skills/{skillId} {
+      allow get: if isValidId(skillId);
+      allow list: if true;
+      allow create: if isValidId(skillId) && isAdmin() && isValidSkill(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(skillId) && isAdmin() && isValidSkill(incoming()) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'domain', 'proficiency', 'context', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(skillId) && isAdmin();
+    }
+
+    match /certifications/{certId} {
+      allow get: if isValidId(certId);
+      allow list: if true;
+      allow create: if isValidId(certId) && isAdmin() && isValidCertification(incoming()) &&
+        incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      allow update: if isValidId(certId) && isAdmin() && isValidCertification(incoming()) &&
+        incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'issuer', 'issueDate', 'credentialId', 'credentialUrl', 'category', 'order', 'updatedAt'
+        ]);
+      allow delete: if isValidId(certId) && isAdmin();
+    }
+
+    match /inquiries/{inquiryId} {
+      allow get: if isValidId(inquiryId) && isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(inquiryId) && isValidInquiry(incoming()) &&
+        incoming().status == 'new' && incoming().createdAt == request.time;
+      allow update: if isValidId(inquiryId) && isAdmin() && isValidInquiry(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().senderName == existing().senderName &&
+        incoming().senderEmail == existing().senderEmail &&
+        incoming().organization == existing().organization &&
+        incoming().subject == existing().subject &&
+        incoming().message == existing().message &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status']);
+      allow delete: if isValidId(inquiryId) && isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow get: if isValidId(userId) && isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow write: if false;
+    }
+  }
+}
